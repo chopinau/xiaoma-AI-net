@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小马AI | 链接配置管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --neon-purple: #7E22CE;
+            --aurora-green: #22C55E;
+            --neon-pink: #EC4899;
+            --cyber-blue: #06B6D4;
+        }
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
+        }
+        .header-gradient {
+            background: linear-gradient(90deg, var(--neon-purple), var(--neon-pink), var(--cyber-blue), var(--aurora-green));
+            height: 2px;
+            animation: gradientFlow 3s linear infinite;
+            background-size: 400% 100%;
+        }
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 400% 50%; }
+        }
+        .holo-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: 900;
+            background: linear-gradient(90deg, var(--neon-purple), var(--neon-pink), var(--cyber-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .card-item {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .card-item:hover {
+            border-color: var(--neon-purple);
+            box-shadow: 0 0 20px rgba(126, 34, 206, 0.3);
+        }
+        .card-item.self-developed { border-left: 4px solid var(--neon-purple); }
+        .card-item.curated { border-left: 4px solid var(--cyber-blue); }
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--neon-purple);
+            box-shadow: 0 0 10px rgba(126, 34, 206, 0.3);
+        }
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn:hover { transform: scale(1.05); }
+        .btn-save { background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink)); }
+        .btn-save:hover { box-shadow: 0 0 20px rgba(126, 34, 206, 0.5); }
+        .btn-export { background: linear-gradient(135deg, var(--cyber-blue), var(--aurora-green)); color: #000; }
+        .btn-export:hover { box-shadow: 0 0 20px rgba(6, 182, 212, 0.5); }
+        .btn-import { background: linear-gradient(135deg, #EAB308, #F97316); color: #000; }
+        .btn-import:hover { box-shadow: 0 0 20px rgba(234, 179, 8, 0.5); }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--aurora-green), #10B981);
+            color: #000;
+            font-weight: 600;
+            border-radius: 8px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.error { background: linear-gradient(135deg, #EF4444, #DC2626); color: #fff; }
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+        .section-title.self-developed {
+            background: linear-gradient(90deg, var(--neon-purple), var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .section-title.curated {
+            background: linear-gradient(90deg, var(--cyber-blue), var(--aurora-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .status-dot.saved { background: var(--aurora-green); }
+        .status-dot.unsaved { background: #EF4444; }
+        .import-area {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .import-area.dragover {
+            border-color: var(--neon-purple);
+            background: rgba(126, 34, 206, 0.1);
+        }
+        .link-status { font-size: 0.75rem; margin-top: 0.25rem; }
+        .link-status.valid { color: var(--aurora-green); }
+        .link-status.invalid { color: #EF4444; }
+        .link-status.empty { color: rgba(255, 255, 255, 0.4); }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--cyber-blue);
+            text-decoration: none;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+        .back-link:hover { color: var(--neon-purple); transform: translateX(-5px); }
+    </style>
+</head>
+<body>
+    <div class="header-gradient"></div>
+
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        <a href="/" class="back-link">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            返回首页
+        </a>
+
+        <div class="text-center mb-10">
+            <h1 class="holo-title mb-4">🔗 小马AI 链接配置管理</h1>
+            <p class="text-gray-400">配置首页卡片的跳转链接，修改后自动保存到本地存储</p>
+        </div>
+
+        <div class="flex flex-wrap justify-center gap-4 mb-8">
+            <button class="btn btn-save" onclick="saveToLocal()">💾 保存到本地</button>
+            <button class="btn btn-export" onclick="exportConfig()">📤 导出配置</button>
+            <label class="btn btn-import cursor-pointer">
+                📥 导入配置
+                <input type="file" accept=".json" onchange="importConfig(event)" style="display: none;">
+            </label>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8 mb-8">
+            <div>
+                <h2 class="section-title self-developed">🟣 小马AI自研</h2>
+                <div id="selfDevelopedCards" class="space-y-4"></div>
+            </div>
+            <div>
+                <h2 class="section-title curated">🔵 小马AI精选</h2>
+                <div id="curatedCards" class="space-y-4"></div>
+            </div>
+        </div>
+
+        <div class="import-area mb-8" id="dropZone">
+            <p class="text-gray-400 mb-4">👆 拖拽JSON配置文件到此处导入</p>
+            <p class="text-gray-500 text-sm">或</p>
+            <label class="cursor-pointer text-cyan-400 hover:text-cyan-300 mt-2 inline-block">
+                点击选择文件
+                <input type="file" accept=".json" onchange="importConfig(event)" style="display: none;">
+            </label>
+        </div>
+
+        <div class="bg-black/50 border border-gray-800 rounded-lg p-6">
+            <h3 class="text-lg font-bold mb-4 text-gray-300">📋 配置说明</h3>
+            <ul class="text-gray-400 text-sm space-y-2">
+                <li>• 所有配置自动保存到浏览器本地存储 (localStorage)</li>
+                <li>• 导出/导入功能用于在不同浏览器间迁移配置</li>
+                <li>• 精选区卡片支持外链跳转，自研区卡片仅支持配置内部链接</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let config = { selfDeveloped: {}, curated: {} };
+
+        const toolsData = {
+            selfDeveloped: [
+                { id: 'batch-generate', name: '批量生图生视频', description: '小马AI核心视觉工具', icon: '🎬', color: '#7E22CE' },
+                { id: 'hero', name: 'AI 生产工厂', description: '小马AI核心引擎', icon: '🐴', color: '#7E22CE' }
+            ],
+            curated: [
+                { id: 'gpt4', name: 'GPT-4 Turbo', icon: '🧠', color: '#22C55E', url: 'https://openai.com/index/gpt-4-turbo/' },
+                { id: 'claude', name: 'Claude 3 Opus', icon: '🎭', color: '#EC4899', url: 'https://www.anthropic.com/claude' },
+                { id: 'midjourney', name: 'Midjourney V6', icon: '🖼️', color: '#EAB308', url: 'https://www.midjourney.com/' },
+                { id: 'stable', name: 'Stable Diffusion 3', icon: '🌀', color: '#06B6D4', url: 'https://stability.ai/stable-diffusion-3' },
+                { id: 'suno', name: 'Suno AI', icon: '🎵', color: '#F97316', url: 'https://suno.ai/' },
+                { id: 'runway', name: 'Runway Gen-3', icon: '🎬', color: '#7E22CE', url: 'https://runwayml.com/' },
+                { id: 'gemini', name: 'Gemini Ultra', icon: '💎', color: '#22C55E', url: 'https://deepmind.google/gemini' },
+                { id: 'copilot', name: 'GitHub Copilot', icon: '👨‍💻', color: '#EC4899', url: 'https://github.com/features/copilot' },
+                { id: 'perplexity', name: 'Perplexity AI', icon: '🔍', color: '#EAB308', url: 'https://www.perplexity.ai/' },
+                { id: 'elevenlabs', name: 'ElevenLabs', icon: '🗣️', color: '#06B6D4', url: 'https://elevenlabs.io/' },
+                { id: 'heygen', name: 'HeyGen', icon: '👤', color: '#F97316', url: 'https://www.heygen.com/' },
+                { id: 'cursor', name: 'Cursor IDE', icon: '⚡', color: '#7E22CE', url: 'https://cursor.com/' },
+                { id: 'notion', name: 'Notion AI', icon: '📝', color: '#22C55E', url: 'https://www.notion.so/product/ai' },
+                { id: 'dify', name: 'Dify', icon: '🔧', color: '#EC4899', url: 'https://dify.ai/' },
+                { id: 'comfyui', name: 'ComfyUI', icon: '🔗', color: '#EAB308', url: 'https://github.com/comfyanonymous/ComfyUI' }
+            ]
+        };
+
+        function isValidUrl(string) {
+            if (!string) return false;
+            try { new URL(string); return true; }
+            catch (_) { return string.startsWith('/') || string.startsWith('#'); }
+        }
+
+        function getUrlStatus(url) {
+            if (!url || url.trim() === '') return { class: 'empty', text: '未配置' };
+            if (isValidUrl(url)) return { class: 'valid', text: '✓ URL有效' };
+            return { class: 'invalid', text: '✗ URL无效' };
+        }
+
+        function renderCards() {
+            const selfDevelopedContainer = document.getElementById('selfDevelopedCards');
+            const curatedContainer = document.getElementById('curatedCards');
+            selfDevelopedContainer.innerHTML = '';
+            curatedContainer.innerHTML = '';
+
+            toolsData.selfDeveloped.forEach(tool => {
+                const savedUrl = config.selfDeveloped[tool.id] || '';
+                const status = getUrlStatus(savedUrl);
+                const div = document.createElement('div');
+                div.className = 'card-item self-developed';
+                div.innerHTML = `
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">${tool.icon}</span>
+                            <div>
+                                <h3 class="font-bold text-lg" style="color: ${tool.color}">${tool.name}</h3>
+                                <p class="text-gray-500 text-sm">${tool.description}</p>
+                            </div>
+                        </div>
+                        <span class="status-dot ${savedUrl ? 'saved' : 'unsaved'}"></span>
+                    </div>
+                    <input type="text" class="input-field mb-2" placeholder="输入跳转链接" value="${savedUrl}" data-id="${tool.id}" data-section="selfDeveloped" oninput="handleInput(this)">
+                    <div class="link-status ${status.class}">${status.text}</div>
+                `;
+                selfDevelopedContainer.appendChild(div);
+            });
+
+            toolsData.curated.forEach(tool => {
+                const savedUrl = config.curated[tool.id] || tool.url || '';
+                const status = getUrlStatus(savedUrl);
+                const div = document.createElement('div');
+                div.className = 'card-item curated';
+                div.innerHTML = `
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">${tool.icon}</span>
+                            <h3 class="font-bold text-lg" style="color: ${tool.color}">${tool.name}</h3>
+                        </div>
+                        <span class="status-dot ${savedUrl ? 'saved' : 'unsaved'}"></span>
+                    </div>
+                    <input type="text" class="input-field mb-2" placeholder="输入跳转链接" value="${savedUrl}" data-id="${tool.id}" data-section="curated" oninput="handleInput(this)">
+                    <div class="link-status ${status.class}">${status.text}</div>
+                `;
+                curatedContainer.appendChild(div);
+            });
+        }
+
+        function handleInput(input) {
+            const id = input.dataset.id;
+            const section = input.dataset.section;
+            const value = input.value.trim();
+            if (section === 'selfDeveloped') config.selfDeveloped[id] = value;
+            else config.curated[id] = value;
+
+            const status = getUrlStatus(value);
+            const statusEl = input.nextElementSibling;
+            const dotEl = input.parentElement.querySelector('.status-dot');
+            statusEl.className = `link-status ${status.class}`;
+            statusEl.textContent = status.text;
+            dotEl.className = `status-dot ${value ? 'saved' : 'unsaved'}`;
+            saveToLocal();
+        }
+
+        function saveToLocal() {
+            try {
+                localStorage.setItem('xiaomai_tool_links', JSON.stringify(config));
+                showToast('✅ 配置已保存到本地存储');
+            } catch (e) { showToast('❌ 保存失败: ' + e.message, true); }
+        }
+
+        function loadFromLocal() {
+            try {
+                const saved = localStorage.getItem('xiaomai_tool_links');
+                if (saved) config = JSON.parse(saved);
+            } catch (e) { console.error('加载配置失败:', e); }
+        }
+
+        function exportConfig() {
+            const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `xiaomai_links_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('📤 配置文件已导出');
+        }
+
+        function importConfig(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported.selfDeveloped || imported.curated) {
+                        config = imported;
+                        renderCards();
+                        saveToLocal();
+                        showToast('📥 配置导入成功');
+                    } else { showToast('❌ 配置文件格式错误', true); }
+                } catch (err) { showToast('❌ 解析文件失败: ' + err.message, true); }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${isError ? 'error' : ''} show`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        const dropZone = document.getElementById('dropZone');
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type === 'application/json') {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const imported = JSON.parse(event.target.result);
+                        if (imported.selfDeveloped || imported.curated) {
+                            config = imported;
+                            renderCards();
+                            saveToLocal();
+                            showToast('📥 配置导入成功');
+                        } else { showToast('❌ 配置文件格式错误', true); }
+                    } catch (err) { showToast('❌ 解析文件失败: ' + err.message, true); }
+                };
+                reader.readAsText(file);
+            } else { showToast('❌ 请上传JSON格式的配置文件', true); }
+        });
+
+        loadFromLocal();
+        renderCards();
+    </script>
+</body>
+</html>
