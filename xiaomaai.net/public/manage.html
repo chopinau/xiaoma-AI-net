@@ -412,6 +412,34 @@
 
         load();
         render();
+
+        function initDefaults() {
+            TOOLS_DEFAULT.selfDeveloped.forEach(t => {
+                if (!toolConfig.selfDeveloped[t.id]) {
+                    toolConfig.selfDeveloped[t.id] = {
+                        name: t.name,
+                        description: t.description,
+                        tags: [...(t.tags || [])],
+                        url: t.url || ''
+                    };
+                }
+            });
+            TOOLS_DEFAULT.curated.forEach(t => {
+                if (!toolConfig.curated[t.id]) {
+                    toolConfig.curated[t.id] = {
+                        name: t.name,
+                        description: t.description,
+                        tags: [...(t.tags || [])],
+                        url: t.url || ''
+                    };
+                }
+            });
+            save();
+        }
+
+        if (Object.keys(toolConfig.selfDeveloped).length === 0 && Object.keys(toolConfig.curated).length === 0) {
+            initDefaults();
+        }
     </script>
 </body>
 </html>
