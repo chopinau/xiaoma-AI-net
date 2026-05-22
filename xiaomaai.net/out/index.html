@@ -1082,12 +1082,16 @@ matrix.load();
                             const tool = toolsData.curated.find(t => t.id === id);
                             if (tool) {
                                 const saved = savedConfig.curated[id];
-                                if (saved.name !== undefined) tool.name = saved.name;
-                                if (saved.description !== undefined) tool.description = saved.description;
-                                if (saved.tags !== undefined) tool.tags = saved.tags;
-                                if (saved.url !== undefined) tool.url = saved.url;
-                                if (saved.customAvatar !== undefined) tool.customAvatar = saved.customAvatar;
-                                console.log('更新精选工具', id, 'url:', tool.url, 'has custom avatar:', !!saved.customAvatar);
+                                if (typeof saved === 'string') {
+                                    if (saved) tool.url = saved;
+                                } else {
+                                    if (saved.name !== undefined) tool.name = saved.name;
+                                    if (saved.description !== undefined) tool.description = saved.description;
+                                    if (saved.tags !== undefined) tool.tags = saved.tags;
+                                    if (saved.url !== undefined) tool.url = saved.url;
+                                    if (saved.customAvatar !== undefined) tool.customAvatar = saved.customAvatar;
+                                    console.log('更新精选工具', id, 'url:', tool.url, 'has custom avatar:', !!saved.customAvatar);
+                                }
                             }
                         }
                     });
@@ -1097,12 +1101,16 @@ matrix.load();
                             const tool = toolsData.selfDeveloped.find(t => t.id === id);
                             if (tool) {
                                 const saved = savedConfig.selfDeveloped[id];
-                                if (saved.name !== undefined) tool.name = saved.name;
-                                if (saved.description !== undefined) tool.description = saved.description;
-                                if (saved.tags !== undefined) tool.tags = saved.tags;
-                                if (saved.url !== undefined) tool.url = saved.url;
-                                if (saved.customAvatar !== undefined) tool.customAvatar = saved.customAvatar;
-                                console.log('更新自研工具', id, 'url:', tool.url, 'has custom avatar:', !!saved.customAvatar);
+                                if (typeof saved === 'string') {
+                                    tool.url = saved;
+                                } else {
+                                    if (saved.name !== undefined) tool.name = saved.name;
+                                    if (saved.description !== undefined) tool.description = saved.description;
+                                    if (saved.tags !== undefined) tool.tags = saved.tags;
+                                    if (saved.url !== undefined) tool.url = saved.url;
+                                    if (saved.customAvatar !== undefined) tool.customAvatar = saved.customAvatar;
+                                }
+                                console.log('更新自研工具', id, 'url:', tool.url);
                             }
                         }
                     });
