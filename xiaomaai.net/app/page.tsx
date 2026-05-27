@@ -1,5 +1,13 @@
-import { redirect } from 'next/navigation'
+'use client'
+
+import { useEffect } from 'react'
 
 export default function Home() {
-  redirect('/index.html')
+  useEffect(() => {
+    if (window.location.pathname === '/') {
+      window.location.replace('/index.html')
+    }
+  }, [])
+
+  return null
 }
